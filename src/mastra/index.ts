@@ -1,17 +1,22 @@
+import { Mastra } from "@mastra/core/mastra";
+import { PinoLogger } from "@mastra/loggers";
+import { LibSQLStore } from "@mastra/libsql";
+import { weatherWorkflow } from "./workflows/weather-workflow";
+import { weatherAgent } from "./agents/weather-agent";
+import { codeGenerationAgent } from "./agents/code-generation-agent";
+import { universalCodeAgent } from "./agents/universal-code-agent";
+import { chainOfThoughtAgent } from "./agents/chain-of-thought-agent";
+import { treeOfThoughtsAgent } from "./agents/tree-of-thoughts-agent";
+import { registerCopilotKit } from "@ag-ui/mastra";
 
-import { Mastra } from '@mastra/core/mastra';
-import { PinoLogger } from '@mastra/loggers';
-import { LibSQLStore } from '@mastra/libsql';
-import { weatherWorkflow } from './workflows/weather-workflow';
-import { weatherAgent } from './agents/weather-agent';
-import { codeGenerationAgent } from './agents/code-generation-agent';
-import { universalCodeAgent } from './agents/universal-code-agent';
-import { chainOfThoughtAgent } from './agents/chain-of-thought-agent';
-import { treeOfThoughtsAgent } from './agents/tree-of-thoughts-agent';
+type WeatherRuntimeContext = {
+  "user-id": string;
+  "temperature-scale": "celsius" | "fahrenheit";
+};
 
 export const mastra = new Mastra({
   // workflows: { weatherWorkflow },
-  agents: { 
+  agents: {
     weatherAgent,
     codeGenerationAgent,
     universalCodeAgent,
@@ -23,7 +28,27 @@ export const mastra = new Mastra({
     url: ":memory:",
   }),
   logger: new PinoLogger({
-    name: 'Mastra',
-    level: 'info',
+    name: "Mastra",
+    level: "info",
   }),
+  server: {
+    cors: {
+      origin: "*",
+      allowMethods: ["*"],
+      allowHeaders: ["*"],
+    },
+    apiRoutes: [
+      registerCopilotKit<WeatherRuntimeContext>({
+        path: "/copilotkit",
+        resourceId: "weatherAgent",
+        setContext: (c, runtimeContext) => {
+          runtimeContext.set(
+            "user-id",
+            c.req.header("X-User-ID") || "anonymous"
+          );
+          runtimeContext.set("temperature-scale", "celsius");
+        },
+      }),
+    ],
+  },
 });
