@@ -15,7 +15,7 @@ type WeatherRuntimeContext = {
 };
 
 export const mastra = new Mastra({
-  // workflows: { weatherWorkflow },
+  workflows: { weatherWorkflow },
   agents: {
     weatherAgent,
     codeGenerationAgent,
