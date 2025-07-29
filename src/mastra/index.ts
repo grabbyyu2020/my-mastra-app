@@ -40,7 +40,7 @@ export const mastra = new Mastra({
     apiRoutes: [
       registerCopilotKit<WeatherRuntimeContext>({
         path: "/copilotkit",
-        resourceId: "weatherAgent",
+        resourceId: "weatherWorkflow",
         setContext: (c, runtimeContext) => {
           runtimeContext.set(
             "user-id",
